@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"></html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Check-In</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .appointment {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customer Check-In</h1>
+    <div id="appointments">
+        <p>Loading appointments...</p>
+    </div>
+    <script>
+        console.log('App is running locally.'); // Debugging message
+
+        async function fetchAppointments() {
+            try {
+                const response = await fetch('/api/appointments');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const appointments = await response.json();
+                const appointmentsDiv = document.getElementById('appointments');
+                appointmentsDiv.innerHTML = '';
+
+                appointments.forEach(appointment => {
+                    const div = document.createElement('div');
+                    div.className = 'appointment';
+                    div.innerHTML = `
+                        <p><strong>Name:</strong> ${appointment.name}</p>
+                        <p><strong>Time:</strong> ${appointment.time}</p>
+                        <button onclick="checkIn(${appointment.id})">Check In</button>
+                    `;
+                    appointmentsDiv.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error fetching appointments:', error);
+                document.getElementById('appointments').innerHTML = '<p>Failed to load appointments. Please check your server.</p>';
+            }
+        }
+
+        async function checkIn(appointmentId) {
+            try {
+                const response = await fetch(`/api/checkin/${appointmentId}`, { method: 'POST' });
+                if (response.ok) {
+                    alert('Check-in successful!');
+                    fetchAppointments(); // Refresh the list
+                } else {
+                    alert('Check-in failed.');
+                }
+            } catch (error) {
+                console.error('Error during check-in:', error);
+                alert('Check-in failed.');
+            }
+        }
+
+        // Fetch appointments on page load
+        fetchAppointments();
+    </script>
+</body>
+</html>
